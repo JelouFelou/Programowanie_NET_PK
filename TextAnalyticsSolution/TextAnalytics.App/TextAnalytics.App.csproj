@@ -8,6 +8,11 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.0.10" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\TextAnalytics.Core\TextAnalytics.Core.csproj" />
     <ProjectReference Include="..\TextAnalytics.Services\TextAnalytics.Services.csproj" />
   </ItemGroup>
