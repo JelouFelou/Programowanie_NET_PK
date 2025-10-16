@@ -17,11 +17,12 @@ namespace TextAnalytics.Services
             // Rejestracja usług warstwy Services
             services.AddSingleton<ILoggerService, ConsoleLogger>();
 
-            // Rejestracja domyślnego dostawcy wejścia (zgodnie z instrukcją)
+            // Rejestracja domyślnego dostawcy wejścia (Konsola)
             services.AddSingleton<IInputProvider, ConsoleInputProvider>();
 
             // Rejestracja logiki warstwy Core
-            services.AddSingleton<TextAnalyzer>();
+            // Rejestracja TextAnalyzer pod interfejsem ITextAnalyzer (zgodnie z zasadami DI)
+            services.AddSingleton<ITextAnalyzer, TextAnalyzer>();
 
             return services;
         }

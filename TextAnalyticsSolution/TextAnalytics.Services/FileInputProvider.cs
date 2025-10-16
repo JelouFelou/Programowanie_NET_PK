@@ -27,11 +27,11 @@ namespace TextAnalytics.Services
 
         public string GetText()
         {
-            _logger.LogInfo($"Próba wczytania tekstu z pliku: {_filePath}");
+            _logger.LogInfo($"Proba wczytania tekstu z pliku: {_filePath}");
 
             if (!File.Exists(_filePath))
             {
-                _logger.LogError($"Plik '{_filePath}' nie został znaleziony. Upewnij się, że ścieżka jest poprawna.");
+                _logger.LogError($"Plik '{_filePath}' nie zostal znaleziony. Upewnij sie, ze sciezka jest poprawna.");
                 return string.Empty;
             }
 
@@ -41,16 +41,16 @@ namespace TextAnalytics.Services
 
                 if (string.IsNullOrWhiteSpace(text))
                 {
-                    _logger.LogError($"Plik '{_filePath}' jest pusty lub zawiera tylko białe znaki.");
+                    _logger.LogError($"Plik '{_filePath}' jest pusty lub zawiera tylko biale znaki.");
                     return string.Empty;
                 }
 
-                _logger.LogSuccess($"Pomyślnie wczytano {text.Length} znaków z pliku.");
+                _logger.LogSuccess($"Pomyslnie wczytano {text.Length} znakow z pliku.");
                 return text;
             }
             catch (Exception ex)
             {
-                _logger.LogError($"Błąd podczas wczytywania pliku {_filePath}", ex);
+                _logger.LogError($"Blad podczas wczytywania pliku {_filePath}", ex);
                 return string.Empty;
             }
         }

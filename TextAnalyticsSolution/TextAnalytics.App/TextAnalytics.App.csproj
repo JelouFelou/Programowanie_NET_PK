@@ -7,6 +7,18 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+	<!-- ROZWIĄZANIE PROBLEMU BLOKOWANIA PLIKÓW (MSB3027/MSB3021) -->
+	<!-- Ta sekcja próbuje zakończyć proces TextAnalytics.App.exe przed rozpoczęciem budowania,
+       co zwalnia blokadę na plikach .dll zależnych. -->
+	<Target Name="PreBuild" BeforeTargets="BeforeBuild">
+		<!-- W systemie Windows używamy taskkill. Parametry:
+         /f - wymusza zakończenie procesu.
+         /fi "IMAGENAME eq $(AssemblyName).exe" - filtruje po nazwie pliku wynikowego projektu (.exe).
+         2>nul - ignoruje błędy (np. jeśli proces nie jest uruchomiony), aby nie przerywać budowania.
+    -->
+		<Exec Command="taskkill /f /fi &quot;IMAGENAME eq $(AssemblyName).exe&quot; 2>nul" ContinueOnError="true" />
+	</Target>
+
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.0.10" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />

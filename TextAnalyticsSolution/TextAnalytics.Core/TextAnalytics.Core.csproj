@@ -7,6 +7,13 @@
   </PropertyGroup>
 	
 	<ItemGroup>
+		<!-- NOTATKA O ZARZĄDZANIU WERSJAMI (SemVer) -->
+		<!-- Wersjonowanie Semantyczne (MAJOR.MINOR.PATCH) określa wpływ aktualizacji na kompatybilność: -->
+		<!-- 1. MAJOR (np. 12.x.x -> 13.0.0): NIEKOMPATYBILNE zmiany w API. Wymagana ostrożność. -->
+		<!-- 2. MINOR (np. 12.0.x -> 12.1.0): Nowe funkcje, ale KOMPATYBILNE wstecz. -->
+		<!-- 3. PATCH (np. 12.0.3 -> 12.0.4): Poprawki błędów, KOMPATYBILNE wstecz. -->
+
+		<!-- Zademonstrowanie aktualizacji (z 11.x.x na 13.x.x) -->
 		<PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
 	</ItemGroup>
 </Project>

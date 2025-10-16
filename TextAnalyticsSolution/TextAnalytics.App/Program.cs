@@ -13,16 +13,11 @@ namespace TextAnalytics.App
             {
                 // Konfiguracja kontenera Dependency Injection
                 var services = new ServiceCollection()
-                    // Rejestracja usług warstwy Services
-                    .AddSingleton<ILoggerService, ConsoleLogger>()
+                    // Rejestracja wszystkich kluczowych usług (Logger, InputProvider, TextAnalyzer)
+                    .AddTextAnalyticsServices()
 
-                    // Rejestracja TextAnalyzer i TextAnalyticsApp
-                    .AddSingleton<TextAnalyzer>()
-                    .AddSingleton<TextAnalyticsApp>() // Główna klasa aplikacji, wstrzyga usługi
-
-                    // UWAGA: IInputProvider nie jest rejestrowany tutaj,
-                    // ponieważ wybór dostawcy (Console/File) zależy od argumentów CLI.
-                    // Dostawca jest tworzony dynamicznie w TextAnalyticsApp.
+                    // Rejestracja głównej klasy aplikacji
+                    .AddSingleton<TextAnalyticsApp>()
 
                     .BuildServiceProvider();
 
@@ -34,7 +29,7 @@ namespace TextAnalytics.App
             {
                 // Logowanie błędów na najwyższym poziomie
                 Console.ForegroundColor = ConsoleColor.DarkRed;
-                Console.WriteLine($"Krytyczny błąd podczas inicjalizacji DI: {ex.Message}");
+                Console.WriteLine($"Krytyczny blad podczas inicjalizacji aplikacji: {ex.Message}");
                 Console.ResetColor();
             }
         }

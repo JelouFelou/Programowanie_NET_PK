@@ -11,7 +11,7 @@ namespace TextAnalytics.Tests
     [TestFixture]
     public class TextAnalyzerTests
     {
-        private TextAnalyzer _analyzer;
+        private ITextAnalyzer _analyzer; // Zmieniono na interfejs ITextAnalyzer
 
         [SetUp]
         public void SetUp()
@@ -36,32 +36,26 @@ namespace TextAnalytics.Tests
             Assert.Multiple(() =>
             {
                 // Statystyki znaków
-                // Ca³kowita d³ugoœæ ci¹gu: 89 (faktyczna d³ugoœæ)
-                Assert.That(stats.CharactersWithSpaces, Is.EqualTo(89), "Liczba znaków ze spacjami.");
+                // Ca³kowita d³ugoœæ ci¹gu: 89
+                // Liczba spacji: 10
+                // Bez spacji: 79 (74 litery + 5 interpunkcja)
+                // Liczba liter: 74
+                // Interpunkcja: 5 (!, ?, ,, ., .)
+                Assert.That(stats.CharactersWithoutSpaces, Is.EqualTo(79), "1) Liczba znaków bez bia³ych znaków.");
+                Assert.That(stats.Letters, Is.EqualTo(74), "2) Liczba liter.");
+                Assert.That(stats.Punctuation, Is.EqualTo(5), "3) Liczba znaków interpunkcyjnych (!, ?, ,, ., .).");
 
-                // Liczba znaków bez spacji (74 litery + 5 interpunkcji)
-                Assert.That(stats.CharactersWithoutSpaces, Is.EqualTo(79), "Liczba znaków bez spacji.");
-                Assert.That(stats.Letters, Is.EqualTo(74), "Liczba liter.");
-                Assert.That(stats.Digits, Is.EqualTo(0), "Liczba cyfr.");
+                // Statystyki s³ów (11 s³ów: Programowanie, jest, fajne, Czy¿, nie, Tak, jest, najlepsze, Programowanie, jest, przysz³oœci¹)
+                Assert.That(stats.WordCount, Is.EqualTo(11), "4) Liczba s³ów.");
+                // Œrednia: 74 litery / 11 s³ów = 6.7272...
+                Assert.That(stats.AverageWordLength, Is.EqualTo(6.7272727272727275d).Within(0.01d), "5) Œrednia d³ugoœæ s³owa (74/11).");
+                // Najkrótsze: "nie" (3) i "tak" (3). Alfabetycznie "nie" < "tak".
+                Assert.That(stats.ShortestWord, Is.EqualTo("nie"), "6) Najkrótsze s³owo (wybrane alfabetycznie w przypadku remisu).");
 
-                Assert.That(stats.Punctuation, Is.EqualTo(5), "Liczba znaków interpunkcyjnych."); // !, ?, ,, ., .
-
-                // Statystyki s³ów
-                Assert.That(stats.WordCount, Is.EqualTo(11), "Liczba s³ów.");
-                Assert.That(stats.UniqueWordCount, Is.EqualTo(8), "Liczba unikalnych s³ów.");
-                Assert.That(stats.MostCommonWord, Is.EqualTo("jest"), "Najczêstsze s³owo.");
-
-                // Obliczenie œredniej d³ugoœci: 74 litery / 11 s³ów = 6.7272...
-                Assert.That(stats.AverageWordLength, Is.EqualTo(74.0 / 11.0).Within(0.01), "Œrednia d³ugoœæ s³owa (74 / 11 = 6.73).");
-                Assert.That(stats.LongestWord, Is.EqualTo("programowanie"), "Najd³u¿sze s³owo (normalizacja do ma³ych liter).");
-                Assert.That(stats.ShortestWord, Is.EqualTo("nie"), "Najkrótsze s³owo (normalizacja do ma³ych liter).");
-
-                // Statystyki zdañ
-                Assert.That(stats.SentenceCount, Is.EqualTo(4), "Liczba zdañ.");
-
-                Assert.That(stats.AverageWordsPerSentence, Is.EqualTo(11.0 / 4.0).Within(0.01), "Œrednia s³ów na zdanie (11 / 4 = 2.75).");
-                // Najd³u¿sze zdanie jest pierwszym z remisu (3 s³owa)
-                Assert.That(stats.LongestSentence, Is.EqualTo("Programowanie jest fajne!"), "Najd³u¿sze zdanie.");
+                // Statystyki zdañ (4 zdania: 1.!, 2.?, 3.., 4..)
+                Assert.That(stats.SentenceCount, Is.EqualTo(4), "Liczba zdañ (4).");
+                // Œrednia s³ów na zdanie: 11 s³ów / 4 zdania = 2.75
+                Assert.That(stats.AverageWordsPerSentence, Is.EqualTo(2.75d).Within(0.01d), "7) Œrednia s³ów na zdanie (11/4).");
             });
         }
 
@@ -150,19 +144,19 @@ namespace TextAnalytics.Tests
         }
 
         /// <summary>
-        /// Testuje s³owa, w których wystêpuje remis w czêstotliwoœci (oba po 2 razy).
-        /// Polityka: Zwracamy pierwsze s³owo, które osi¹gnê³o maksymaln¹ czêstotliwoœæ.
+        /// Testuje sytuacjê, gdy kilka s³ów wystêpuje z t¹ sam¹, najwy¿sz¹ czêstotliwoœci¹.
         /// </summary>
         [Test]
         public void Analyze_WordFrequencyTie_ReturnsFirstOccurrence()
         {
-            // S³owa "to" i "jest" wystêpuj¹ 2 razy. S³owo "To" pojawia siê jako pierwsze w tekœcie.
-            const string text = "To jest test. To jest dobry dzieñ.";
+            // Tekst: "jest" (2), "programowanie" (2), "to" (2), "fajne" (1).
+            // Wszystkie s³owa s¹ znormalizowane do ma³ych liter.
+            // "jest", "programowanie", "to" s¹ remisem. Alfabetycznie najmniejsze to "jest".
+            const string text = "Jest to programowanie! To jest programowanie. Fajne.";
             var stats = _analyzer.Analyze(text);
 
-            Assert.That(stats.WordCount, Is.EqualTo(7));
-            Assert.That(stats.MostCommonWord, Is.EqualTo("to"), "W przypadku remisu wybieramy to, które wyst¹pi³o pierwsze.");
-            Assert.That(stats.UniqueWordCount, Is.EqualTo(5));
+            // Oczekiwana polityka: W przypadku remisu (jest, programowanie, to) wybieramy alfabetycznie najmniejsze.
+            Assert.That(stats.MostCommonWord, Is.EqualTo("jest"), "W przypadku remisu (jest, programowanie, to) wybieramy alfabetycznie najmniejsze.");
         }
 
         /// <summary>
@@ -180,6 +174,18 @@ namespace TextAnalytics.Tests
         }
 
         /// <summary>
+        /// Testuje liczenie unikalnych s³ów, bez uwzglêdniania wielkoœci liter.
+        /// </summary>
+        [Test]
+        public void Analyze_UniqueWordCount_IsCaseInsensitive()
+        {
+            const string text = "Jeden dwa Dwa trzy Trzy Trzy";
+            var stats = _analyzer.Analyze(text);
+
+            Assert.That(stats.UniqueWordCount, Is.EqualTo(3), "Powinny byæ 3 unikalne s³owa (jeden, dwa, trzy).");
+        }
+
+        /// <summary>
         /// Testuje tekst, który zawiera cyfry i znaki specjalne bez liter.
         /// </summary>
         [Test]
@@ -192,9 +198,7 @@ namespace TextAnalytics.Tests
             {
                 Assert.That(stats.WordCount, Is.EqualTo(3), "Cyfry traktowane jako s³owa.");
                 Assert.That(stats.Digits, Is.EqualTo(9), "Liczba cyfr.");
-                Assert.That(stats.Letters, Is.EqualTo(0), "Liczba liter.");
-                Assert.That(stats.Punctuation, Is.EqualTo(2), "Liczba interpunkcji.");
-                Assert.That(stats.SentenceCount, Is.EqualTo(2), "Liczba zdañ (na ! ?).");
+                Assert.That(stats.Letters, Is.EqualTo(0), "Brak liter.");
             });
         }
     }

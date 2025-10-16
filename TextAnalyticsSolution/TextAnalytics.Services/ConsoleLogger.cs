@@ -25,7 +25,8 @@ namespace TextAnalytics.Services
             var fullMessage = message;
             if (ex != null)
             {
-                fullMessage += $" Szczegóły: {ex.Message}";
+                // Użycie ex.Message jest bezpieczne, ponieważ ex nie jest null.
+                fullMessage += $" Szczegoly: {ex.Message}";
             }
             WriteColoredMessage("ERROR", fullMessage, ConsoleColor.Red);
         }

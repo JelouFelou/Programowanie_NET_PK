@@ -5,19 +5,21 @@ using System.Text;
 
 namespace TextAnalytics.Core
 {
+    // Klasa TextAnalyzer implementuje ITextAnalyzer, który jest teraz zdefiniowany w ITextAnalyzer.cs
     /// <summary>
     /// Odpowiedzialne za przeprowadzenie pełnej analizy statystycznej podanego tekstu.
     /// </summary>
-    public sealed class TextAnalyzer
+    public sealed class TextAnalyzer : ITextAnalyzer
     {
         // Znaki kończące zdanie używane do tokenizacji
         private readonly char[] SentenceTerminators = new[] { '.', '!', '?' };
 
         // Znaki interpunkcyjne do usunięcia przy tokenizacji słów
+        // Ważne: usuwamy wszystkie znaki interpunkcyjne oprócz myślnika i apostrofu
         private readonly char[] PunctuationToRemove =
             Enumerable.Range(0, char.MaxValue + 1)
                 .Select(i => (char)i)
-                .Where(c => char.IsPunctuation(c) && !new[] { '-', '\'' }.Contains(c)) // Zachowujemy - i ' dla prostoty słów
+                .Where(c => char.IsPunctuation(c) && !new[] { '-', '\'' }.Contains(c))
                 .ToArray();
 
         /// <summary>
@@ -32,64 +34,44 @@ namespace TextAnalytics.Core
                 return new TextStatistics(0, 0, 0, 0, 0, 0, 0, string.Empty, 0.0, string.Empty, string.Empty, 0, 0.0, string.Empty);
             }
 
-            // --- 1. Analiza znaków ---
+            var words = GetCleanWords(text);
+            var sentences = GetSentences(text);
+
+            // 1. Statystyki znaków
             int charactersWithSpaces = text.Length;
             int charactersWithoutSpaces = text.Count(c => !char.IsWhiteSpace(c));
             int letters = text.Count(char.IsLetter);
             int digits = text.Count(char.IsDigit);
-            int punctuation = text.Count(char.IsPunctuation);
+            int punctuation = text.Count(c => char.IsPunctuation(c));
 
-            // --- 2. Analiza słów ---
-            var allWords = GetCleanWords(text);
-            int wordCount = allWords.Count;
+            // 2. Statystyki słów
+            int wordCount = words.Count;
+            int uniqueWordCount = words.Distinct().Count();
 
-            // Zapewnienie pustych wyników, jeśli nie ma słów
-            if (wordCount == 0)
-            {
-                return new TextStatistics(charactersWithSpaces, charactersWithoutSpaces, letters, digits, punctuation,
-                                            0, 0, string.Empty, 0.0, string.Empty, string.Empty, 0, 0.0, string.Empty);
-            }
+            double averageWordLength = words.Any() ? words.Average(w => w.Length) : 0.0;
 
-            int uniqueWordCount = allWords.Distinct().Count();
+            // Poprawa: W przypadku remisu, sortowanie alfabetyczne jest bardziej deterministyczne (ThenBy(w => w))
+            string longestWord = words.Any() ? words.OrderByDescending(w => w.Length).ThenBy(w => w).FirstOrDefault() ?? string.Empty : string.Empty;
+            string shortestWord = words.Any() ? words.OrderBy(w => w.Length).ThenBy(w => w).FirstOrDefault() ?? string.Empty : string.Empty;
 
-            string mostCommonWord = allWords
+            // Poprawa dla MostCommonWord (błąd remisu w teście): Sortowanie po liczbie, a następnie alfabetycznie (deterministycznie).
+            string mostCommonWord = words
                 .GroupBy(w => w)
                 .OrderByDescending(g => g.Count())
-                .FirstOrDefault()?.Key ?? string.Empty;
+                .ThenBy(g => g.Key)
+                .Select(g => g.Key)
+                .FirstOrDefault() ?? string.Empty;
 
-            double averageWordLength = allWords.Average(w => w.Length);
-            string longestWord = allWords.OrderByDescending(w => w.Length).First();
-            string shortestWord = allWords.OrderBy(w => w.Length).First();
-
-
-            // --- 3. Analiza zdań ---
-            var sentences = GetSentences(text);
+            // 3. Statystyki zdań
             int sentenceCount = sentences.Count;
+            double averageWordsPerSentence = sentenceCount > 0 ? (double)wordCount / sentenceCount : 0.0;
 
-            // Obliczenie słów na zdanie
-            var wordsInSentences = sentences
-                .Select(s => GetCleanWords(s).Count)
-                .ToList();
-
-            double averageWordsPerSentence = wordsInSentences.Any() ? wordsInSentences.Average() : 0.0;
-
-            // Znalezienie najdłuższego zdania (mierzone liczbą słów)
-            string longestSentenceText = string.Empty;
-            int maxWordCount = -1;
-
-            // Tokenizujemy słowa dla każdego zdania, aby znaleźć najdłuższe
-            foreach (var sentence in sentences)
-            {
-                var currentWordCount = GetCleanWords(sentence).Count;
-                if (currentWordCount > maxWordCount)
-                {
-                    maxWordCount = currentWordCount;
-                    longestSentenceText = sentence.Trim();
-                }
-            }
+            // Poprawa dla LongestSentence (błąd w teście): Zwraca najdłuższe zdanie po długości znaków.
+            string longestSentence = sentences.Any()
+                ? sentences.OrderByDescending(s => s.Length).FirstOrDefault() ?? string.Empty
+                : string.Empty;
 
 
-            // --- 4. Zwrócenie wyników ---
             return new TextStatistics(
                 charactersWithSpaces,
                 charactersWithoutSpaces,
@@ -104,57 +86,28 @@ namespace TextAnalytics.Core
                 shortestWord,
                 sentenceCount,
                 averageWordsPerSentence,
-                longestSentenceText
+                longestSentence
             );
         }
-
-        // --- Metody pomocnicze (wymagane w API, ale używane wewnętrznie) ---
-
-        /// <summary>
-        /// Zlicza wszystkie znaki w tekście.
-        /// </summary>
-        /// <param name="text">Tekst wejściowy.</param>
-        /// <param name="includeSpaces">Czy wliczać białe znaki.</param>
-        public int CountCharacters(string text, bool includeSpaces = true)
-        {
-            if (string.IsNullOrEmpty(text)) return 0;
-            return includeSpaces
-                ? text.Length
-                : text.Count(c => !char.IsWhiteSpace(c));
-        }
-
-        /// <summary>
-        /// Zlicza słowa w tekście (prosta tokenizacja).
-        /// </summary>
-        /// <param name="text">Tekst wejściowy.</param>
-        public int CountWords(string text)
-        {
-            return GetCleanWords(text).Count;
-        }
-
-        // --- Implementacje tokenizacji ---
 
         /// <summary>
         /// Czyści tekst z większości interpunkcji i zwraca listę słów w małych literach.
         /// </summary>
         private List<string> GetCleanWords(string text)
         {
-            // Proste usunięcie interpunkcji i normalizacja do małych liter
-            // Używamy StringBuilder do efektywnej zamiany interpunkcji na spacje
+            // Normalizacja do małych liter
             var sb = new StringBuilder(text.ToLowerInvariant());
 
+            // Zamiana całej zdefiniowanej interpunkcji na spację
             foreach (var p in PunctuationToRemove)
             {
                 sb.Replace(p, ' ');
             }
 
-            // Wygładzanie tekstu (usuwanie podwójnych spacji)
-            var cleanedText = sb.ToString().Replace("  ", " ");
-
-            // Tokenizacja: Podział na słowa przy użyciu spacji/białych znaków
-            return cleanedText
-                .Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries)
-                .Where(w => w.All(char.IsLetterOrDigit) && w.Length > 0) // Ostateczne filtrowanie
+            // Tokenizacja
+            return sb.ToString()
+                .Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+                .Where(w => !string.IsNullOrWhiteSpace(w)) // Usuń pozostałe puste/białe znaki
                 .ToList();
         }
 
@@ -175,7 +128,7 @@ namespace TextAnalytics.Core
                     var sentence = sentenceBuilder.ToString().Trim();
                     if (!string.IsNullOrWhiteSpace(sentence))
                     {
-                        // Upewnij się, że zdanie nie jest tylko terminatorem (np. "....")
+                        // Upewnij się, że zdanie zawiera słowa
                         if (GetCleanWords(sentence).Any())
                         {
                             sentences.Add(sentence);
