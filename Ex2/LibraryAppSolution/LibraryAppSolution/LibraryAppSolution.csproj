@@ -36,18 +36,5 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup />
-  <ItemGroup>
-    <Compile Include="src\Domain\Book.cs" />
-    <Compile Include="src\Domain\EBook.cs" />
-    <Compile Include="src\Domain\IReservable.cs" />
-    <Compile Include="src\Domain\LibraryItem.cs" />
-    <Compile Include="src\Domain\Reservation.cs" />
-    <Compile Include="src\Extensions\LibraryExtensions.cs" />
-    <Compile Include="src\Services\AnalyticsService.cs" />
-    <Compile Include="src\Services\LibraryService.cs" />
-    <Compile Include="tests\LibraryApp.Tests\AnalyticsServiceTests.cs" />
-    <Compile Include="tests\LibraryApp.Tests\ExtensionsTests.cs" />
-    <Compile Include="tests\LibraryApp.Tests\LibraryServiceTests.cs" />
-  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

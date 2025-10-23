@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace LibraryAppSolution.src.Domain
+namespace LibraryApp.Extensions
 {
-    internal class Book
+    internal class LibraryExtensions
     {
     }
 }

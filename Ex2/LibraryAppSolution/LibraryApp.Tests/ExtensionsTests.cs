@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace LibraryAppSolution.tests.LibraryApp.Tests
+namespace LibraryApp.Tests
 {
     internal class ExtensionsTests
     {

@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace LibraryAppSolution.src.Services
+namespace LibraryApp.Services
 {
-    internal class LibraryService
+    internal class AnalyticsService
     {
     }
 }
