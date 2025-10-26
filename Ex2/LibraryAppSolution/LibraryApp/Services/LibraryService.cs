@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using LibraryApp.Domain;
+using LibraryApp.Extensions;
 
 namespace LibraryApp.Services
 {
@@ -146,7 +147,6 @@ namespace LibraryApp.Services
         {
             // Używamy "protected set" we właściwości, aby umożliwić jej zmianę tylko w klasie bazowej
             // lub dziedziczących, co spełnia zasadę enkapsulacji.
-            // W kontekście serwisów, często dodaje się metody do manipulacji stanem.
             var propertyInfo = typeof(LibraryItem).GetProperty(nameof(LibraryItem.IsAvailable));
             if (propertyInfo != null && propertyInfo.CanWrite)
             {
@@ -157,5 +157,6 @@ namespace LibraryApp.Services
         // Właściwość tylko do odczytu dla AnalyticsService
         public IReadOnlyList<Reservation> AllReservations => _reservations;
         public IReadOnlyList<LibraryItem> AllItems => _items;
+        public IReadOnlySet<string> AllUsers => _users;
     }
 }

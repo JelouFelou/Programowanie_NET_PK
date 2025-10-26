@@ -222,7 +222,6 @@ class Program
         Console.WriteLine($"Łączna liczba rezerwacji: {analytics.TotalLoans()}");
         Console.WriteLine($"Wskaźnik zrealizowanych rezerwacji: {analytics.FulfillmentRate():F2}%");
 
-        // Przykład funkcji "naukowej"
         try
         {
             string popularTitle = analytics.MostPopularItemTitle();
