@@ -145,8 +145,7 @@ namespace LibraryApp.Services
         // Metoda umożliwiająca zmianę dostępności (z użyciem refleksji/enkapsulacji)
         private void SetItemAvailability(LibraryItem item, bool isAvailable)
         {
-            // Używamy "protected set" we właściwości, aby umożliwić jej zmianę tylko w klasie bazowej
-            // lub dziedziczących, co spełnia zasadę enkapsulacji.
+            // Używamy "protected set" we właściwości, aby umożliwić jej zmianę tylko w klasie bazowej lub dziedziczących
             var propertyInfo = typeof(LibraryItem).GetProperty(nameof(LibraryItem.IsAvailable));
             if (propertyInfo != null && propertyInfo.CanWrite)
             {

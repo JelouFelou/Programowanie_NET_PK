@@ -12,7 +12,6 @@ namespace LibraryApp.Tests
         public void Available_FiltersCorrectly()
         {
             var item1 = new Book(1, "Available Book", "A", "1"); // Dostępna
-            // Musimy zmienić stan IsAvailable. Użyjemy refleksji, jak w LibraryService.
             var item2 = new Book(2, "Unavailable Book", "B", "2");
             var propInfo = typeof(LibraryItem).GetProperty(nameof(LibraryItem.IsAvailable));
             propInfo.SetValue(item2, false);

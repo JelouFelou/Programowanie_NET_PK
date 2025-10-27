@@ -26,8 +26,6 @@ namespace LibraryApp.Tests
             Assert.Equal("PDF", ebook.FileFormat);
 
             // Sprawdzenie, czy DisplayInfo działa bez błędu
-            // W testach konsolowych trudniej sprawdzić Console.WriteLine, 
-            // ale można sprawdzić, czy metoda jest poprawnie nadpisana
             Assert.Throws<ArgumentNullException>(() => new EBook(3, "X", "Y", "Z", null));
         }
 
